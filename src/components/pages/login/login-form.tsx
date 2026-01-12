@@ -8,7 +8,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { josefin } from "@/app/layout";
+import { josefin } from "@/fonts/fonts";
 import Image from "next/image";
 import loginImage from "@/assets/loginhero.png";
 import Link from "next/link";
@@ -40,13 +40,19 @@ export function LoginForm({
                   type="email"
                   placeholder="m@example.com"
                   required
+                  className="hover:ring-1"
                 />
               </Field>
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                 </div>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  className="hover:ring-1"
+                />
               </Field>
               <Field>
                 <Button type="submit" className="cursor-pointer">
