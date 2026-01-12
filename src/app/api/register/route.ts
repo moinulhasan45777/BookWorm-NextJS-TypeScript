@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mongoConnect } from "@/lib/mongoConnect";
 import * as bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET as string;
+if (!JWT_SECRET) {
+  throw new Error("No JWT Secret found!");
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,9 +38,20 @@ export async function POST(req: NextRequest) {
       role: role,
     });
 
+    // generate JWT
+    const token = jwt.sign(
+      {
+        email,
+        role,
+      },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     return NextResponse.json(
       {
         success: "Registration Successful!",
+        token,
       },
       {
         status: 201,

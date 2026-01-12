@@ -18,6 +18,7 @@ import { RegistrationForm } from "@/types/registrationForm";
 import "dotenv/config";
 import axios from "axios";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function RegisterForm({
   className,
@@ -56,11 +57,13 @@ export function RegisterForm({
     await axios
       .post("/api/register", newUser)
       .then((registrationRes) => {
-        console.log(registrationRes.data);
+        toast.success("Registration Successful!");
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err.message);
+        toast.error(
+          "Status: " + err.response?.status + ".  " + err.response?.data?.error
+        );
         setLoading(false);
       });
   };
