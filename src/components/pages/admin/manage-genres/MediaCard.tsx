@@ -9,18 +9,22 @@ import { FetchedGenre } from "@/types/fetchedGenre";
 import Swal from "sweetalert2";
 import { useState } from "react";
 import axios from "axios";
-import { toast } from "sonner";
+import EditGenreModal from "./EditGenreModal";
 
 interface MediaCardProps {
   genre: FetchedGenre;
   onDelete: () => void;
+  onUpdate: () => void;
 }
 
-export default function MediaCard({ genre, onDelete }: MediaCardProps) {
-  const [loading, setLoading] = useState<boolean>(false);
+export default function MediaCard({
+  genre,
+  onDelete,
+  onUpdate,
+}: MediaCardProps) {
+  const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
 
   const handleDelete = (genre: FetchedGenre) => {
-    setLoading(true);
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -46,8 +50,6 @@ export default function MediaCard({ genre, onDelete }: MediaCardProps) {
             text: "Something went wrong!",
             footer: '<a href="#">Why do I have this issue?</a>',
           });
-        } finally {
-          setLoading(false);
         }
       }
     });
@@ -140,6 +142,7 @@ export default function MediaCard({ genre, onDelete }: MediaCardProps) {
               backgroundColor: "rgba(0,0,0,0.7)",
             },
           }}
+          onClick={() => setEditModalOpen(true)}
         >
           Edit
         </Button>
@@ -165,6 +168,15 @@ export default function MediaCard({ genre, onDelete }: MediaCardProps) {
           Delete
         </Button>
       </CardActions>
+      <EditGenreModal
+        genre={genre}
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onGenreUpdated={() => {
+          onUpdate();
+          setEditModalOpen(false);
+        }}
+      />
     </Card>
   );
 }

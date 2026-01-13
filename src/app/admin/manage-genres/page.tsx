@@ -42,7 +42,12 @@ export default function ManageGenres() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-x-2 gap-y-7">
         {allGenres.map((genre) => (
-          <MediaCard key={genre._id} genre={genre} onDelete={getAllGenres} />
+          <MediaCard
+            key={genre._id}
+            genre={genre}
+            onDelete={getAllGenres}
+            onUpdate={getAllGenres}
+          />
         ))}
       </div>
     </div>
