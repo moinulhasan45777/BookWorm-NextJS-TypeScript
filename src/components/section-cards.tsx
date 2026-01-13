@@ -14,6 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { UserType } from "@/types/userType";
+import Link from "next/link";
 
 export function SectionCards() {
   const [allUsers, setAllUsers] = useState<UserType[]>([]);
@@ -71,7 +72,12 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-2 font-medium">
             The number of users registered in BookWorm
           </div>
-          <div className="text-muted-foreground underline">Manage Users</div>
+          <Link
+            href="admin/manage-users"
+            className="text-muted-foreground underline hover:text-primary"
+          >
+            Manage Users
+          </Link>
         </CardFooter>
       </Card>
       <Card className="@container/card">
