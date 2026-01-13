@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import axios from "axios";
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const token = req.cookies.get("bookworm_token")?.value;
   const { pathname } = req.nextUrl;
 
   if ((token && pathname === "/register") || (token && pathname === "/")) {
     try {
       const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as {
-        role: string;
+        email: string;
       };
+      const baseUrl = req.nextUrl.origin;
+      const res = await axios.get(
+        `${baseUrl}/api/users/user?email=${decodedToken.email}`
+      );
+      console.log(res);
       const redirectUrl =
-        decodedToken.role === "Admin" ? "/admin/overview" : "/reader/home";
+        res.data.role === "Admin" ? "/admin/overview" : "/reader/home";
       return NextResponse.redirect(new URL(redirectUrl, req.url));
     } catch {
       return NextResponse.next();

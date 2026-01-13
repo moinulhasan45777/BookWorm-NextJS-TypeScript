@@ -45,8 +45,11 @@ export async function POST(req: NextRequest) {
     // generate JWT
     const token = jwt.sign(
       {
+        name,
+        photo,
         email,
         role,
+        joiningDate: new Date().toISOString().split("T")[0],
       },
       JWT_SECRET,
       { expiresIn: "7d" }
