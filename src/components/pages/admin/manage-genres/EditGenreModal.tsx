@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { GenreType } from "@/types/genreType";
 import { FetchedGenre } from "@/types/fetchedGenre";
 import Swal from "sweetalert2";
+import { IconX } from "@tabler/icons-react";
 
 const style = {
   position: "absolute",
@@ -105,6 +106,16 @@ export default function EditGenreModal({
       aria-describedby="modal-modal-description"
     >
       <Box sx={style}>
+        <div className="absolute top-2 right-2 z-10">
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 hover:bg-gray-100"
+          >
+            <IconX className="h-4 w-4" />
+          </Button>
+        </div>
         <div className={cn("flex flex-col gap-6", className)} {...props}>
           <Card className="overflow-hidden p-0">
             <CardContent className="p-0 ">

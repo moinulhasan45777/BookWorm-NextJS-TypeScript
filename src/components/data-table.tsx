@@ -100,15 +100,15 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
+import AddBookModal from "@/components/pages/admin/manage-books/AddBookModal";
 
 export const schema = z.object({
-  id: z.number(),
-  header: z.string(),
-  type: z.string(),
-  status: z.string(),
-  target: z.string(),
-  limit: z.string(),
-  reviewer: z.string(),
+  _id: z.string(),
+  title: z.string(),
+  author: z.string(),
+  genre: z.string(),
+  coverImage: z.string(),
+  description: z.string(),
 });
 
 // Create a separate component for the drag handle
@@ -333,8 +333,10 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 
 export function DataTable({
   data: initialData,
+  onBookAdded,
 }: {
   data: z.infer<typeof schema>[];
+  onBookAdded?: () => void;
 }) {
   const [data, setData] = React.useState(() => initialData);
   const [rowSelection, setRowSelection] = React.useState({});
@@ -417,16 +419,7 @@ export function DataTable({
           <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
         </TabsList>
         <div className="flex items-center mt-7 gap-2">
-          <Link href="add-book">
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-primary text-white cursor-pointer hover:shadow-md"
-            >
-              <IconPlus />
-              <span className="hidden lg:inline">Add Book</span>
-            </Button>
-          </Link>
+          <AddBookModal onBookAdded={onBookAdded || (() => {})} />
         </div>
       </div>
       <TabsContent
@@ -442,7 +435,7 @@ export function DataTable({
             id={sortableId}
           >
             <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
+              <TableHeader className="bg-muted sticky top-0 z-[5]">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {

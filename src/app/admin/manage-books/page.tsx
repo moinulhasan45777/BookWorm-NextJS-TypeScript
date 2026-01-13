@@ -1,11 +1,34 @@
-import { DataTable } from "@/components/data-table";
-import data from "./data.json";
-import React from "react";
+"use client";
 
-export default function page() {
+import { BooksDataTable } from "@/components/books-data-table";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "sonner";
+import { FetchedBook } from "@/types/fetchedBook";
+
+export default function ManageBooks() {
+  const [allBooks, setAllBooks] = useState<FetchedBook[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const getAllBooks = async () => {
+    try {
+      const result = await axios.get("/api/books");
+      setAllBooks(result.data);
+    } catch {
+      toast.error("Failed to load Books!");
+      setAllBooks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllBooks();
+  }, []);
+
   return (
-    <div>
-      <DataTable data={data} />
+    <div className="mx-6">
+      <BooksDataTable data={allBooks} onBookAdded={getAllBooks} />
     </div>
   );
 }

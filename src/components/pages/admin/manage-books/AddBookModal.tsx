@@ -1,27 +1,21 @@
 "use client";
 import * as React from "react";
 import Box from "@mui/material/Box";
-
 import Modal from "@mui/material/Modal";
 import { Button } from "@/components/ui/button";
 import { IconPlus, IconX } from "@tabler/icons-react";
-
 import { cn } from "@/lib/utils";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { josefin } from "@/fonts/fonts";
-
 import { SubmitHandler, useForm } from "react-hook-form";
-import { RegistrationForm } from "@/types/registrationForm";
 import "dotenv/config";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { setToken } from "@/lib/token";
-import { useAuth } from "@/hooks/useAuth";
-import { GenreType } from "@/types/genreType";
+import { BookType } from "@/types/bookType";
+import { FetchedGenre } from "@/types/fetchedGenre";
 
 const style = {
   position: "absolute",
@@ -36,46 +30,69 @@ const style = {
   borderRadius: 4,
 };
 
-export default function AddGenreModal({
+export default function AddBookModal({
   className,
-  onGenreAdded,
+  onBookAdded,
   ...props
-}: React.ComponentProps<"div"> & { onGenreAdded: () => void }) {
-  // States
+}: React.ComponentProps<"div"> & { onBookAdded: () => void }) {
   const [loading, setLoading] = useState<boolean>(false);
+  const [genres, setGenres] = useState<FetchedGenre[]>([]);
+  const [open, setOpen] = React.useState(false);
 
-  // React Hook Form
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<GenreType>();
+  } = useForm<BookType>();
 
-  const handleRegistration: SubmitHandler<GenreType> = async (data) => {
+  const handleOpen = () => {
+    reset();
+    setOpen(true);
+  };
+
+  const handleClose = () => setOpen(false);
+
+  const getAllGenres = async () => {
+    try {
+      const result = await axios.get("/api/genres");
+      setGenres(result.data);
+    } catch {
+      toast.error("Failed to load genres!");
+      setGenres([]);
+    }
+  };
+
+  useEffect(() => {
+    getAllGenres();
+  }, []);
+
+  const handleAddBook: SubmitHandler<BookType> = async (data) => {
     setLoading(true);
-    // Upload Image
-    const gImage = data.genreImage[0];
+
+    const coverImageFile = data.coverImage[0];
     const formData = new FormData();
-    formData.append("image", gImage);
+    formData.append("image", coverImageFile);
 
     const image_API_URL = `https://api.imgbb.com/1/upload?expiration=600&key=${process.env.NEXT_PUBLIC_IMAGE_API}`;
     const res = await axios.post(image_API_URL, formData);
 
-    const genreImage = res.data.data.display_url;
+    const coverImage = res.data.data.display_url;
 
-    const newGenre = {
+    const newBook = {
       title: data.title,
-      genreImage: genreImage,
+      author: data.author,
+      genre: data.genre,
+      coverImage: coverImage,
       description: data.description,
     };
 
     await axios
-      .post("/api/genres/add-genre", newGenre)
+      .post("/api/books/add-book", newBook)
       .then(() => {
-        toast.success("Genre Successfully Added!");
+        toast.success("Book Successfully Added!");
         reset();
-        onGenreAdded();
+        onBookAdded();
         setLoading(false);
       })
       .catch((err) => {
@@ -89,13 +106,6 @@ export default function AddGenreModal({
       });
   };
 
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => {
-    reset();
-    setOpen(true);
-  };
-  const handleClose = () => setOpen(false);
-
   return (
     <div>
       <Button
@@ -105,8 +115,7 @@ export default function AddGenreModal({
         className="bg-primary text-white cursor-pointer hover:shadow-md"
       >
         <IconPlus />
-
-        <span className="hidden lg:inline">Add Genre</span>
+        <span className="hidden lg:inline">Create Book</span>
       </Button>
 
       <Modal
@@ -130,65 +139,98 @@ export default function AddGenreModal({
             <Card className="overflow-hidden p-0">
               <CardContent className="p-0 ">
                 <form
-                  onSubmit={handleSubmit(handleRegistration)}
+                  onSubmit={handleSubmit(handleAddBook)}
                   className="p-6 md:p-8"
                   noValidate
                 >
                   <FieldGroup>
                     <div className="flex flex-col items-center gap-2 text-center">
                       <h1 className={`text-2xl font-bold ${josefin.className}`}>
-                        Add a new Genre
+                        Add a new Book
                       </h1>
                       <p
                         className={`text-muted-foreground text-balance ${josefin.className}`}
                       >
-                        Adding a new genre opens a new way to read the world.
+                        Adding a new book enriches our collection.
                       </p>
                     </div>
                     <Field>
-                      <FieldLabel htmlFor="title">Genre Title</FieldLabel>
+                      <FieldLabel htmlFor="title">Book Title</FieldLabel>
                       <Input
                         id="title"
                         type="text"
-                        placeholder="Horror"
+                        placeholder="The Great Gatsby"
                         className="hover:ring-1"
                         {...register("title", { required: true })}
                       />
                       {errors.title?.type === "required" && (
                         <p className="text-red-500 text-sm">
-                          Please enter a title for the Genre.
+                          Please enter a title for the book.
                         </p>
                       )}
                     </Field>
                     <Field>
-                      <FieldLabel htmlFor="genreImage">
-                        Genre Cover Photo
+                      <FieldLabel htmlFor="author">Author</FieldLabel>
+                      <Input
+                        id="author"
+                        type="text"
+                        placeholder="F. Scott Fitzgerald"
+                        className="hover:ring-1"
+                        {...register("author", { required: true })}
+                      />
+                      {errors.author?.type === "required" && (
+                        <p className="text-red-500 text-sm">
+                          Please enter the author name.
+                        </p>
+                      )}
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="genre">Genre</FieldLabel>
+                      <select
+                        id="genre"
+                        className="hover:ring-1 rounded-md border border-[#e5e5e5] transition-all duration-200 p-2 text-sm"
+                        {...register("genre", { required: true })}
+                      >
+                        <option value="">Select a genre</option>
+                        {genres.map((genre) => (
+                          <option key={genre._id} value={genre.title}>
+                            {genre.title}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.genre?.type === "required" && (
+                        <p className="text-red-500 text-sm">
+                          Please select a genre.
+                        </p>
+                      )}
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="coverImage">
+                        Book Cover Image
                       </FieldLabel>
                       <Input
-                        id="genreImage"
+                        id="coverImage"
                         type="file"
                         className="hover:ring-1"
-                        {...register("genreImage", { required: true })}
+                        {...register("coverImage", { required: true })}
                       />
-                      {errors.genreImage?.type === "required" && (
+                      {errors.coverImage?.type === "required" && (
                         <p className="text-red-500 text-sm">
-                          Please upload a Genre Cover Photo.
+                          Please upload a book cover image.
                         </p>
                       )}
                     </Field>
                     <Field>
-                      <FieldLabel htmlFor="genreDescription">
-                        Description
-                      </FieldLabel>
+                      <FieldLabel htmlFor="description">Description</FieldLabel>
                       <textarea
                         id="description"
-                        placeholder="The movies under the Horror Genre usually scares people...."
+                        placeholder="A classic American novel about the Jazz Age..."
                         className="hover:ring-1 rounded-md border border-[#e5e5e5] transition-all duration-200 p-2 text-sm h-30"
                         {...register("description", { required: true })}
                       />
                       {errors.description?.type === "required" && (
                         <p className="text-red-500 text-sm">
-                          Please give a description to this genre.
+                          Please provide a description for the book.
                         </p>
                       )}
                     </Field>
@@ -198,7 +240,7 @@ export default function AddGenreModal({
                         type="submit"
                         className="cursor-pointer"
                       >
-                        Add Genre
+                        Create Book
                       </Button>
                     </Field>
                   </FieldGroup>
