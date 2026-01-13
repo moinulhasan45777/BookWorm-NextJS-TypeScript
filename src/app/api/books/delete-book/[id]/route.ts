@@ -11,10 +11,10 @@ export async function DELETE(
     const { id } = await params;
     const _id = new ObjectId(id);
 
-    const result = await db.collection("genres").deleteOne({ _id });
+    const result = await db.collection("books").deleteOne({ _id });
 
     if (result.deletedCount === 0) {
-      return NextResponse.json({ error: "Genre not found" }, { status: 404 });
+      return NextResponse.json({ error: "Book not found" }, { status: 404 });
     }
 
     return NextResponse.json(

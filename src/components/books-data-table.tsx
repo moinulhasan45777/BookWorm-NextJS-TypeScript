@@ -1,6 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
+import axios from "axios";
+import Swal from "sweetalert2";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -34,76 +37,6 @@ import {
 import { FetchedBook } from "@/types/fetchedBook";
 import AddBookModal from "@/components/pages/admin/manage-books/AddBookModal";
 
-const columns: ColumnDef<FetchedBook>[] = [
-  {
-    accessorKey: "title",
-    header: "Title",
-    size: 300,
-    cell: ({ row }) => (
-      <div className="font-medium truncate">{row.original.title}</div>
-    ),
-    enableHiding: false,
-  },
-  {
-    accessorKey: "author",
-    header: "Author",
-    size: 200,
-    cell: ({ row }) => <div className="truncate">{row.original.author}</div>,
-  },
-  {
-    accessorKey: "genre",
-    header: "Genre",
-    size: 150,
-    cell: ({ row }) => (
-      <Badge
-        variant="outline"
-        className="text-muted-foreground px-1.5 truncate"
-      >
-        {row.original.genre}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "coverImage",
-    header: "Cover Thumbnail",
-    size: 120,
-    cell: ({ row }) => (
-      <div className="w-12 h-16 rounded overflow-hidden">
-        <img
-          src={row.original.coverImage}
-          alt={row.original.title}
-          className="w-full h-full object-cover"
-        />
-      </div>
-    ),
-  },
-  {
-    id: "actions",
-    header: () => null,
-    size: 80,
-    cell: () => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <IconDotsVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem>
-            <IconEdit className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem className="text-red-600">
-            <IconTrash className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
-
 interface BooksDataTableProps {
   data: FetchedBook[];
   onBookAdded?: () => void;
@@ -117,6 +50,113 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+
+  const handleDelete = (book: FetchedBook) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`/api/books/delete-book/${book._id}`);
+          Swal.fire({
+            title: "Deleted!",
+            text: "Book has been deleted.",
+            icon: "success",
+          });
+          if (onBookAdded) {
+            onBookAdded();
+          }
+        } catch {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Something went wrong!",
+            footer: '<a href="#">Why do I have this issue?</a>',
+          });
+        }
+      }
+    });
+  };
+
+  const columns: ColumnDef<FetchedBook>[] = [
+    {
+      accessorKey: "title",
+      header: "Title",
+      size: 300,
+      cell: ({ row }) => (
+        <div className="font-medium truncate pl-4">{row.original.title}</div>
+      ),
+      enableHiding: false,
+    },
+    {
+      accessorKey: "author",
+      header: "Author",
+      size: 200,
+      cell: ({ row }) => <div className="truncate">{row.original.author}</div>,
+    },
+    {
+      accessorKey: "genre",
+      header: "Genre",
+      size: 150,
+      cell: ({ row }) => (
+        <Badge
+          variant="outline"
+          className="text-muted-foreground px-1.5 truncate"
+        >
+          {row.original.genre}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "coverImage",
+      header: "Cover Thumbnail",
+      size: 120,
+      cell: ({ row }) => (
+        <div className="w-12 h-16 rounded overflow-hidden relative">
+          <Image
+            src={row.original.coverImage}
+            alt={row.original.title}
+            fill
+            className="object-cover"
+          />
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: () => null,
+      size: 80,
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <IconDotsVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>
+              <IconEdit className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600"
+              onClick={() => handleDelete(row.original)}
+            >
+              <IconTrash className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   const table = useReactTable({
     data,
@@ -167,7 +207,10 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className={header.id === "title" ? "pl-4" : ""}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
