@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { mongoConnect } from "@/lib/mongoConnect";
 import * as bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) {
@@ -10,7 +11,7 @@ if (!JWT_SECRET) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { client, db } = await mongoConnect();
+    const { db } = await mongoConnect();
     const { name, photo, email, password, role } = await req.json();
 
     // Look for email already exists or not
@@ -30,13 +31,16 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.collection("users").insertOne({
+    const newUser = {
       name: name,
       photo: photo,
       email: email,
       password: hashedPassword,
       role: role,
-    });
+      joiningDate: new Date().toISOString().split("T")[0],
+    };
+
+    await db.collection("users").insertOne(newUser);
 
     // generate JWT
     const token = jwt.sign(
@@ -48,15 +52,28 @@ export async function POST(req: NextRequest) {
       { expiresIn: "7d" }
     );
 
-    return NextResponse.json(
+    const res = NextResponse.json(
       {
         success: "Registration Successful!",
+        newUser,
         token,
       },
       {
         status: 201,
       }
     );
+
+    res.cookies.set({
+      name: "bookworm_token",
+      value: token,
+      httpOnly: true,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    return res;
   } catch (err: unknown) {
     return NextResponse.json(
       { error: "Internal server error", err },

@@ -19,6 +19,7 @@ import "dotenv/config";
 import axios from "axios";
 import { useState } from "react";
 import { toast } from "sonner";
+import { setToken } from "@/lib/token";
 
 export function RegisterForm({
   className,
@@ -58,6 +59,8 @@ export function RegisterForm({
       .post("/api/register", newUser)
       .then((registrationRes) => {
         toast.success("Registration Successful!");
+        console.log(registrationRes.data.token);
+        setToken(registrationRes.data.token);
         setLoading(false);
       })
       .catch((err) => {
