@@ -38,11 +38,11 @@ export default function ManageGenres() {
         >
           Manage Genres
         </h1>
-        <AddGenreModal></AddGenreModal>
+        <AddGenreModal onGenreAdded={getAllGenres} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-x-2 gap-y-7">
         {allGenres.map((genre) => (
-          <MediaCard key={genre._id} genre={genre}></MediaCard>
+          <MediaCard key={genre._id} genre={genre} onDelete={getAllGenres} />
         ))}
       </div>
     </div>

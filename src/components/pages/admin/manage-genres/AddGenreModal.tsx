@@ -38,8 +38,9 @@ const style = {
 
 export default function AddGenreModal({
   className,
+  onGenreAdded,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & { onGenreAdded: () => void }) {
   // States
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -47,6 +48,7 @@ export default function AddGenreModal({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<GenreType>();
 
@@ -72,6 +74,8 @@ export default function AddGenreModal({
       .post("/api/genres/add-genre", newGenre)
       .then(() => {
         toast.success("Genre Successfully Added!");
+        reset();
+        onGenreAdded();
         setLoading(false);
       })
       .catch((err) => {
@@ -86,7 +90,10 @@ export default function AddGenreModal({
   };
 
   const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    reset();
+    setOpen(true);
+  };
   const handleClose = () => setOpen(false);
 
   return (

@@ -1,15 +1,58 @@
+"use client";
+
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { FetchedGenre } from "@/types/fetchedGenre";
+import Swal from "sweetalert2";
+import { useState } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 
 interface MediaCardProps {
   genre: FetchedGenre;
+  onDelete: () => void;
 }
 
-export default function MediaCard({ genre }: MediaCardProps) {
+export default function MediaCard({ genre, onDelete }: MediaCardProps) {
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleDelete = (genre: FetchedGenre) => {
+    setLoading(true);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`/api/genres/delete-genre/${genre._id}`);
+          Swal.fire({
+            title: "Deleted!",
+            text: "Genre has been deleted.",
+            icon: "success",
+          });
+          onDelete();
+        } catch {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Something went wrong!",
+            footer: '<a href="#">Why do I have this issue?</a>',
+          });
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  };
+
   return (
     <Card
       sx={{
@@ -51,7 +94,7 @@ export default function MediaCard({ genre }: MediaCardProps) {
           variant="h5"
           component="div"
           sx={{
-            color: "#dea85d", // Primary color
+            color: "#dea85d",
             fontWeight: "bold",
             marginBottom: "8px",
           }}
@@ -61,7 +104,7 @@ export default function MediaCard({ genre }: MediaCardProps) {
         <Typography
           variant="body2"
           sx={{
-            color: "rgba(255, 255, 255, 0.9)", // Whitish color
+            color: "rgba(255, 255, 255, 0.9)",
             lineHeight: 1.4,
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -117,6 +160,7 @@ export default function MediaCard({ genre }: MediaCardProps) {
               backgroundColor: "rgba(220,53,69,1)",
             },
           }}
+          onClick={() => handleDelete(genre)}
         >
           Delete
         </Button>
