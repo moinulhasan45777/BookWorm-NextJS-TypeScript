@@ -20,6 +20,7 @@ import axios from "axios";
 import { useState } from "react";
 import { toast } from "sonner";
 import { setToken } from "@/lib/token";
+import { useAuth } from "@/hooks/useAuth";
 
 export function RegisterForm({
   className,
@@ -28,11 +29,13 @@ export function RegisterForm({
   // States
   const [loading, setLoading] = useState<boolean>(false);
 
+  const { setUserData } = useAuth();
+
   // React Hook Form
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RegistrationForm>();
 
   const handleRegistration: SubmitHandler<RegistrationForm> = async (data) => {
@@ -53,13 +56,20 @@ export function RegisterForm({
       email: data.email,
       password: data.password,
       role: "Normal",
+      joiningDate: new Date().toISOString().split("T")[0],
     };
 
     await axios
       .post("/api/register", newUser)
       .then((registrationRes) => {
         toast.success("Registration Successful!");
-        console.log(registrationRes.data.token);
+        setUserData({
+          name: newUser.name,
+          email: newUser.email,
+          photo: newUser.photo,
+          role: newUser.role,
+          joiningDate: new Date(newUser.joiningDate),
+        });
         setToken(registrationRes.data.token);
         setLoading(false);
       })

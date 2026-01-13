@@ -15,7 +15,7 @@ export async function proxy(req: NextRequest) {
       const res = await axios.get(
         `${baseUrl}/api/users/user?email=${decodedToken.email}`
       );
-      console.log(res);
+
       const redirectUrl =
         res.data.role === "Admin" ? "/admin/overview" : "/reader/home";
       return NextResponse.redirect(new URL(redirectUrl, req.url));

@@ -1,20 +1,13 @@
 "use client";
 
-import { getToken, removeToken } from "@/lib/token";
-import { useCallback, useState } from "react";
+import { AuthContext } from "@/app/providers/AuthProvider";
+import { useContext } from "react";
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return !!getToken();
-  });
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
 
-  const logout = useCallback(() => {
-    removeToken();
-    setIsAuthenticated(false);
-  }, []);
-
-  return {
-    isAuthenticated,
-    logout,
-  };
+  return context;
 }

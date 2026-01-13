@@ -12,7 +12,8 @@ if (!JWT_SECRET) {
 export async function POST(req: NextRequest) {
   try {
     const { db } = await mongoConnect();
-    const { name, photo, email, password, role } = await req.json();
+    const { name, photo, email, password, role, joiningDate } =
+      await req.json();
 
     // Look for email already exists or not
     const user = await db.collection("users").findOne({ email });
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
       email: email,
       password: hashedPassword,
       role: role,
-      joiningDate: new Date().toISOString().split("T")[0],
+      joiningDate: joiningDate,
     };
 
     await db.collection("users").insertOne(newUser);
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
         photo,
         email,
         role,
-        joiningDate: new Date().toISOString().split("T")[0],
+        joiningDate,
       },
       JWT_SECRET,
       { expiresIn: "7d" }
