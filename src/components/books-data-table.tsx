@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/table";
 import { FetchedBook } from "@/types/fetchedBook";
 import AddBookModal from "@/components/pages/admin/manage-books/AddBookModal";
+import EditBookModal from "@/components/pages/admin/manage-books/EditBookModal";
 
 interface BooksDataTableProps {
   data: FetchedBook[];
@@ -50,6 +51,15 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [editModalOpen, setEditModalOpen] = React.useState(false);
+  const [selectedBook, setSelectedBook] = React.useState<FetchedBook | null>(
+    null
+  );
+
+  const handleEdit = (book: FetchedBook) => {
+    setSelectedBook(book);
+    setEditModalOpen(true);
+  };
 
   const handleDelete = (book: FetchedBook) => {
     Swal.fire({
@@ -141,7 +151,7 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <IconEdit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
@@ -318,6 +328,18 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
           </div>
         </div>
       </div>
+      {selectedBook && (
+        <EditBookModal
+          book={selectedBook}
+          open={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          onBookUpdated={() => {
+            if (onBookAdded) {
+              onBookAdded();
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
