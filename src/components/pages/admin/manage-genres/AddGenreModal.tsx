@@ -53,9 +53,9 @@ export default function AddGenreModal({
   const handleRegistration: SubmitHandler<GenreType> = async (data) => {
     setLoading(true);
     // Upload Image
-    const profileImage = data.genreImage[0];
+    const gImage = data.genreImage[0];
     const formData = new FormData();
-    formData.append("image", profileImage);
+    formData.append("image", gImage);
 
     const image_API_URL = `https://api.imgbb.com/1/upload?expiration=600&key=${process.env.NEXT_PUBLIC_IMAGE_API}`;
     const res = await axios.post(image_API_URL, formData);
@@ -65,7 +65,7 @@ export default function AddGenreModal({
     const newGenre = {
       title: data.title,
       genreImage: genreImage,
-      decription: data.description,
+      description: data.description,
     };
 
     await axios

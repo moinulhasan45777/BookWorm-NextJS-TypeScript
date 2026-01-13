@@ -1,6 +1,5 @@
 import { mongoConnect } from "@/lib/mongoConnect";
 import { NextRequest, NextResponse } from "next/server";
-import { success } from "zod";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,7 +22,7 @@ export async function POST(req: NextRequest) {
         error: "Something went wrong!",
       },
       {
-        status: 401,
+        status: 404,
       }
     );
   }
