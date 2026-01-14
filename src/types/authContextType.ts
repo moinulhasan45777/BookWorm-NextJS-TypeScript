@@ -5,4 +5,5 @@ export interface AuthContextType {
   setUserData: React.Dispatch<React.SetStateAction<UserType | null>>;
   loading: boolean;
   refetch: () => void;
+  logout: () => Promise<void>;
 }

@@ -1,9 +1,11 @@
 "use client";
 import { SpinnerBadge } from "@/components/shared/SpinnerBadge";
 import { getAuthUser } from "@/service/getAuthUser";
+import { logout as logoutService } from "@/service/logout";
 import { AuthContextType } from "@/types/authContextType";
 import { UserType } from "@/types/userType";
 import React, { createContext, ReactNode, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
@@ -12,6 +14,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [userData, setUserData] = useState<UserType | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
 
   const fetchUser = async () => {
     try {
@@ -24,6 +27,16 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const logout = async () => {
+    try {
+      await logoutService();
+      setUserData(null);
+      router.push("/");
+    } catch {
+      console.error("Logout failed");
+    }
+  };
+
   useEffect(() => {
     fetchUser();
   }, []);
@@ -33,6 +46,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     setUserData,
     loading,
     refetch: fetchUser,
+    logout,
   };
 
   if (loading) {

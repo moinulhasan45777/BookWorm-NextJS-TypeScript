@@ -24,7 +24,7 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  if (!token && pathname !== "/register" && pathname !== "/login") {
+  if (!token && pathname !== "/register" && pathname !== "/") {
     return NextResponse.redirect(new URL("/", req.url));
   }
   return NextResponse.next();
