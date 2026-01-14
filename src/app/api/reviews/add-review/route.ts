@@ -23,7 +23,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await db.collection("reviews").insertOne(newReview);
+    await db.collection("reviews").insertOne({
+      ...newReview,
+      createdAt: new Date(),
+    });
 
     return NextResponse.json(
       {

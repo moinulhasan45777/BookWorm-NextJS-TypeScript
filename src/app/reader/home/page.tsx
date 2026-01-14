@@ -8,6 +8,7 @@ import RecommendedBookCard from "@/components/pages/reader/home/RecommendedBookC
 import ReadingStatsCard from "@/components/pages/reader/home/ReadingStatsCard";
 import GenreDistributionChart from "@/components/pages/reader/home/GenreDistributionChart";
 import MonthlyBooksReadChart from "@/components/pages/reader/home/MonthlyBooksReadChart";
+import ActivityFeed from "@/components/pages/reader/home/ActivityFeed";
 import { josefin } from "@/fonts/fonts";
 import { Button } from "@/components/ui/button";
 import { IconRefresh } from "@tabler/icons-react";
@@ -162,6 +163,8 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      <ActivityFeed />
     </div>
   );
 }
