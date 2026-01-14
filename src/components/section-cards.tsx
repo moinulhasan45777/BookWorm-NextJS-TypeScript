@@ -1,6 +1,6 @@
 "use client";
 
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
+import { IconTrendingUp } from "@tabler/icons-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,61 +11,45 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { UserType } from "@/types/userType";
 import Link from "next/link";
 
-export function SectionCards() {
-  const [allUsers, setAllUsers] = useState<UserType[]>([]);
-  const [loading, setLoading] = useState(true);
+interface SectionCardsProps {
+  numberOfUsers: number;
+  numberOfBooks: number;
+  numberOfGenres: number;
+}
 
-  const getUser = async (isRefetch = false) => {
-    try {
-      if (isRefetch) setLoading(true);
-      const res = await axios.get("/api/users");
-      setAllUsers(res.data);
-      console.log(res);
-    } catch {
-      setAllUsers([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getUser();
-  }, []);
-
+export function SectionCards({
+  numberOfUsers,
+  numberOfBooks,
+  numberOfGenres,
+}: SectionCardsProps) {
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Total Books</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
+            {numberOfBooks}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <IconTrendingUp className="size-4" />
+            The number of books in BookWorm
           </div>
-          <div className="text-muted-foreground">
-            Visitors for the last 6 months
-          </div>
+          <Link
+            href="/admin/manage-books"
+            className="text-muted-foreground underline hover:text-primary"
+          >
+            Manage Books
+          </Link>
         </CardFooter>
       </Card>
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Total Users</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {allUsers.length}
+            {numberOfUsers}
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
@@ -73,7 +57,7 @@ export function SectionCards() {
             The number of users registered in BookWorm
           </div>
           <Link
-            href="admin/manage-users"
+            href="/admin/manage-users"
             className="text-muted-foreground underline hover:text-primary"
           >
             Manage Users
@@ -82,22 +66,21 @@ export function SectionCards() {
       </Card>
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
+          <CardDescription>Total Genres</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
+            {numberOfGenres}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention <IconTrendingUp className="size-4" />
+            The number of genres in BookWorm
           </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
+          <Link
+            href="/admin/manage-genres"
+            className="text-muted-foreground underline hover:text-primary"
+          >
+            Manage Genres
+          </Link>
         </CardFooter>
       </Card>
       <Card className="@container/card">
