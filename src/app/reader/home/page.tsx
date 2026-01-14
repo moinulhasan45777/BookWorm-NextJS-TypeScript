@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { FetchedBook } from "@/types/fetchedBook";
 import RecommendedBookCard from "@/components/pages/reader/home/RecommendedBookCard";
 import ReadingStatsCard from "@/components/pages/reader/home/ReadingStatsCard";
+import GenreDistributionChart from "@/components/pages/reader/home/GenreDistributionChart";
+import MonthlyBooksReadChart from "@/components/pages/reader/home/MonthlyBooksReadChart";
 import { josefin } from "@/fonts/fonts";
 import { Button } from "@/components/ui/button";
 import { IconRefresh } from "@tabler/icons-react";
@@ -99,6 +101,15 @@ export default function Home() {
       </div>
 
       {stats && <ReadingStatsCard stats={stats} />}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {authContext?.userData?._id && (
+          <>
+            <GenreDistributionChart userId={authContext.userData._id} />
+            <MonthlyBooksReadChart userId={authContext.userData._id} />
+          </>
+        )}
+      </div>
 
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
