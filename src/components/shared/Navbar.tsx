@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { IconMenu2, IconX, IconLogout } from "@tabler/icons-react";
 import { josefin } from "@/fonts/fonts";
@@ -12,8 +12,18 @@ import { cn } from "@/lib/utils";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const authContext = useAuth();
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = () => {
     Swal.fire({
@@ -54,7 +64,12 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-background border-b sticky top-0 z-50">
+    <nav
+      className={cn(
+        "bg-background border-b sticky top-0 z-50 transition-all duration-300",
+        isScrolled && "shadow-md"
+      )}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link
