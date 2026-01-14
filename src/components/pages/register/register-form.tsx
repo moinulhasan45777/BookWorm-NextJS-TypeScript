@@ -71,12 +71,15 @@ export function RegisterForm({
           joiningDate: new Date(newUser.joiningDate),
         });
         setToken(registrationRes.data.token);
-        setLoading(false);
+
+        window.location.href = "/reader/home";
       })
       .catch((err) => {
         toast.error(
           "Status: " + err.response?.status + ".  " + err.response?.data?.error
         );
+      })
+      .finally(() => {
         setLoading(false);
       });
   };

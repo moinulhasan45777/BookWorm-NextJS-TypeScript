@@ -2,6 +2,7 @@
 
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { mongoConnect } from "@/lib/mongoConnect";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -12,14 +13,31 @@ export async function getAuthUser() {
   if (!token) return null;
 
   try {
-    const user = jwt.verify(token, JWT_SECRET!) as {
-      name: string;
-      photo: string;
+    const decoded = jwt.verify(token, JWT_SECRET!) as {
       email: string;
       role: string;
-      joiningDate: Date;
     };
-    return user;
+
+    const { db } = await mongoConnect();
+    const user = await db.collection("users").findOne(
+      { email: decoded.email },
+      {
+        projection: {
+          _id: 0,
+          password: 0,
+        },
+      }
+    );
+
+    if (!user) return null;
+
+    return {
+      name: user.name,
+      photo: user.photo,
+      email: user.email,
+      role: user.role,
+      joiningDate: user.joiningDate,
+    };
   } catch {
     return null;
   }

@@ -33,7 +33,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       setUserData(null);
       router.push("/");
     } catch {
-      console.error("Logout failed");
+      throw new Error("Could not Logout! An unexpected error occured!");
     }
   };
 
