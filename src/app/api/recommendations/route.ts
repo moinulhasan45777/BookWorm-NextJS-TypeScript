@@ -2,6 +2,23 @@ import { mongoConnect } from "@/lib/mongoConnect";
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 
+interface ReviewAggregation {
+  _id: string;
+  avgRating: number;
+  reviewCount: number;
+}
+
+interface ShelfAggregation {
+  _id: string;
+  shelfCount: number;
+}
+
+interface BookDocument {
+  _id: ObjectId | string;
+  genre: string;
+  [key: string]: unknown;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { db } = await mongoConnect();
@@ -72,9 +89,11 @@ export async function GET(request: NextRequest) {
       })
       .toArray();
 
-    const bookIds = candidateBooks.map((book) => book._id.toString());
+    const bookIds = candidateBooks.map((book) =>
+      (book as BookDocument)._id.toString()
+    );
 
-    const reviewsAggregation = await db
+    const reviewsAggregation = (await db
       .collection("reviews")
       .aggregate([
         {
@@ -92,7 +111,7 @@ export async function GET(request: NextRequest) {
           },
         },
       ])
-      .toArray();
+      .toArray()) as ReviewAggregation[];
 
     const bookScores = new Map(
       reviewsAggregation.map((r) => [
@@ -105,15 +124,15 @@ export async function GET(request: NextRequest) {
       ])
     );
 
-    const scoredBooks = candidateBooks
+    const scoredBooks = (candidateBooks as BookDocument[])
       .map((book) => {
-        const bookId = book._id.toString();
+        const bookId = (book._id as ObjectId).toString();
         const stats = bookScores.get(bookId) || {
           avgRating: 0,
           reviewCount: 0,
           score: 0,
         };
-        const genreMatch = genreCounts[book.genre] || 0;
+        const genreMatch = genreCounts[book.genre as string] || 0;
         return {
           ...book,
           _id: bookId,
@@ -155,7 +174,15 @@ export async function GET(request: NextRequest) {
 }
 
 async function getPopularBooks(
-  db: any,
+  db: {
+    collection: (name: string) => {
+      find: (query: object) => {
+        limit: (n: number) => { toArray: () => Promise<unknown[]> };
+        toArray: () => Promise<unknown[]>;
+      };
+      aggregate: (pipeline: object[]) => { toArray: () => Promise<unknown[]> };
+    };
+  },
   excludeIds: string[],
   limit: number = 12
 ) {
@@ -163,19 +190,19 @@ async function getPopularBooks(
     typeof id === "string" ? new ObjectId(id) : id
   );
 
-  const allBooks = await db
+  const allBooks = (await db
     .collection("books")
     .find({ _id: { $nin: excludeObjectIds } })
     .limit(limit * 2)
-    .toArray();
+    .toArray()) as BookDocument[];
 
   if (allBooks.length === 0) {
     return [];
   }
 
-  const bookIds = allBooks.map((book) => book._id.toString());
+  const bookIds = allBooks.map((book) => (book._id as ObjectId).toString());
 
-  const reviewsAggregation = await db
+  const reviewsAggregation = (await db
     .collection("reviews")
     .aggregate([
       {
@@ -192,9 +219,9 @@ async function getPopularBooks(
         },
       },
     ])
-    .toArray();
+    .toArray()) as ReviewAggregation[];
 
-  const shelvesAggregation = await db
+  const shelvesAggregation = (await db
     .collection("user_shelves")
     .aggregate([
       {
@@ -209,7 +236,7 @@ async function getPopularBooks(
         },
       },
     ])
-    .toArray();
+    .toArray()) as ShelfAggregation[];
 
   const bookRatings = new Map(
     reviewsAggregation.map((r) => [
@@ -224,7 +251,7 @@ async function getPopularBooks(
 
   const scoredBooks = allBooks
     .map((book) => {
-      const bookId = book._id.toString();
+      const bookId = (book._id as ObjectId).toString();
       const rating = bookRatings.get(bookId) || {
         avgRating: 0,
         reviewCount: 0,
@@ -236,6 +263,7 @@ async function getPopularBooks(
         avgRating: rating.avgRating,
         reviewCount: rating.reviewCount,
         shelfCount,
+        genreMatch: 0,
         score: rating.avgRating * 0.5 + shelfCount * 0.3 + Math.random() * 0.2,
       };
     })

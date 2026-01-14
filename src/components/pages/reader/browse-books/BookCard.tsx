@@ -5,6 +5,7 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import { FetchedBook } from "@/types/fetchedBook";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface BookCardProps {
   book: FetchedBook;
