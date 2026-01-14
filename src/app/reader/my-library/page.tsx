@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
+
 import { FetchedUserShelf } from "@/types/fetchedUserShelf";
 import { FetchedBook } from "@/types/fetchedBook";
 import LibraryBookCard from "@/components/pages/reader/my-library/LibraryBookCard";
@@ -12,113 +13,178 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function MyLibrary() {
   const authContext = useAuth();
+
   const [shelves, setShelves] = useState<FetchedUserShelf[]>([]);
   const [books, setBooks] = useState<FetchedBook[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    if (authContext?.userData?._id) {
-      fetchLibrary();
-    }
-  }, [authContext?.userData?._id]);
+  const hasLoadedOnceRef = useRef(false);
+  const userId = authContext?.userData?._id;
 
-  const fetchLibrary = async () => {
-    if (!authContext?.userData?._id) return;
+  const fetchLibrary = useCallback(
+    async (opts?: { showGlobalLoader?: boolean }) => {
+      if (!userId) return;
 
-    setLoading(true);
-    try {
-      const [shelvesRes, booksRes] = await Promise.all([
-        axios.get("/api/shelves/user-library", {
-          params: { userId: authContext.userData._id },
-        }),
-        axios.get("/api/books"),
-      ]);
+      const showGlobalLoader =
+        opts?.showGlobalLoader ?? !hasLoadedOnceRef.current;
 
-      setShelves(shelvesRes.data);
-      setBooks(booksRes.data);
-    } catch {
-      toast.error("Failed to load library!");
-    } finally {
-      setLoading(false);
-    }
-  };
+      const controller = new AbortController();
 
-  const handleStartReading = async (shelfId: string) => {
-    const shelf = shelves.find((s) => s._id === shelfId);
-    if (!shelf) return;
+      if (showGlobalLoader) setLoading(true);
 
-    try {
-      await axios.post("/api/shelves/add-to-shelf", {
-        userId: shelf.userId,
-        bookId: shelf.bookId,
-        shelf: "Currently Reading",
-      });
+      try {
+        const [shelvesRes, booksRes] = await Promise.all([
+          axios.get("/api/shelves/user-library", {
+            params: { userId },
+            signal: controller.signal,
+          }),
+          axios.get("/api/books", {
+            signal: controller.signal,
+          }),
+        ]);
 
-      toast.success("Started reading!");
-      fetchLibrary();
-    } catch {
-      toast.error("Failed to start reading!");
-    }
-  };
-
-  const handleUpdateProgress = async (shelfId: string, progress: number) => {
-    const shelf = shelves.find((s) => s._id === shelfId);
-    if (!shelf) return;
-
-    try {
-      const response = await axios.put("/api/shelves/update-progress", {
-        userId: shelf.userId,
-        bookId: shelf.bookId,
-        progress,
-      });
-
-      if (response.data.movedToRead) {
-        toast.success("Book completed and moved to Read!");
+        setShelves(shelvesRes.data);
+        setBooks(booksRes.data);
+        hasLoadedOnceRef.current = true;
+      } catch {
+        toast.error("Failed to load library!");
+      } finally {
+        if (showGlobalLoader) setLoading(false);
       }
 
-      fetchLibrary();
-    } catch {
-      toast.error("Failed to update progress!");
-    }
-  };
+      return () => controller.abort();
+    },
+    [userId]
+  );
 
-  const handleRemove = (shelfId: string) => {
-    const shelf = shelves.find((s) => s._id === shelfId);
-    if (!shelf) return;
+  useEffect(() => {
+    if (!userId) return;
 
-    Swal.fire({
-      title: "Remove from library?",
-      text: "This book will be removed from your shelf.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, remove it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
+    const controller = new AbortController();
+
+    (async () => {
+      setLoading(true);
+      try {
+        const [shelvesRes, booksRes] = await Promise.all([
+          axios.get("/api/shelves/user-library", {
+            params: { userId },
+            signal: controller.signal,
+          }),
+          axios.get("/api/books", {
+            signal: controller.signal,
+          }),
+        ]);
+        setShelves(shelvesRes.data);
+        setBooks(booksRes.data);
+        hasLoadedOnceRef.current = true;
+      } catch {
+        toast.error("Failed to load library!");
+      } finally {
+        setLoading(false);
+      }
+    })();
+
+    return () => controller.abort();
+  }, [userId]);
+
+  const bookMap = useMemo(() => {
+    const m = new Map<string, FetchedBook>();
+    for (const b of books) m.set(b._id, b);
+    return m;
+  }, [books]);
+
+  const handleStartReading = useCallback(
+    async (shelfId: string) => {
+      const shelf = shelves.find((s) => s._id === shelfId);
+      if (!shelf) return;
+
+      try {
+        await axios.post("/api/shelves/add-to-shelf", {
+          userId: shelf.userId,
+          bookId: shelf.bookId,
+          shelf: "Currently Reading",
+        });
+
+        toast.success("Started reading!");
+        await fetchLibrary({ showGlobalLoader: false });
+      } catch {
+        toast.error("Failed to start reading!");
+      }
+    },
+    [shelves, fetchLibrary]
+  );
+
+  const handleUpdateProgress = useCallback(
+    async (shelfId: string, progress: number) => {
+      const shelf = shelves.find((s) => s._id === shelfId);
+      if (!shelf) return;
+
+      try {
+        const response = await axios.put("/api/shelves/update-progress", {
+          userId: shelf.userId,
+          bookId: shelf.bookId,
+          progress,
+        });
+
+        if (response.data?.movedToRead) {
+          toast.success("Book completed and moved to Read!");
+        } else {
+          toast.success("Progress updated!");
+        }
+
+        await fetchLibrary({ showGlobalLoader: false });
+      } catch {
+        toast.error("Failed to update progress!");
+      }
+    },
+    [shelves, fetchLibrary]
+  );
+
+  const handleRemove = useCallback(
+    (shelfId: string) => {
+      const shelf = shelves.find((s) => s._id === shelfId);
+      if (!shelf) return;
+
+      Swal.fire({
+        title: "Remove from library?",
+        text: "This book will be removed from your shelf.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, remove it!",
+      }).then(async (result) => {
+        if (!result.isConfirmed) return;
+
         try {
           await axios.delete("/api/shelves/remove-from-shelf", {
             data: { userId: shelf.userId, bookId: shelf.bookId },
           });
 
           toast.success("Removed from library!");
-          fetchLibrary();
+          await fetchLibrary({ showGlobalLoader: false });
         } catch {
           toast.error("Failed to remove from library!");
         }
-      }
-    });
-  };
-
-  const getBookById = (bookId: string): FetchedBook | null => {
-    return books.find((book) => book._id === bookId) || null;
-  };
-
-  const wantToReadBooks = shelves.filter((s) => s.shelf === "Want to Read");
-  const currentlyReadingBooks = shelves.filter(
-    (s) => s.shelf === "Currently Reading"
+      });
+    },
+    [shelves, fetchLibrary]
   );
-  const readBooks = shelves.filter((s) => s.shelf === "Read");
+
+  const wantToReadBooks = useMemo(
+    () => shelves.filter((s) => s.shelf === "Want to Read"),
+    [shelves]
+  );
+
+  const currentlyReadingBooks = useMemo(
+    () => shelves.filter((s) => s.shelf === "Currently Reading"),
+    [shelves]
+  );
+
+  const readBooks = useMemo(
+    () => shelves.filter((s) => s.shelf === "Read"),
+    [shelves]
+  );
 
   const renderShelf = (
     title: string,
@@ -155,7 +221,7 @@ export default function MyLibrary() {
         ) : (
           <div className="flex flex-wrap" style={{ gap: "16px" }}>
             {shelfBooks.map((shelf) => {
-              const book = getBookById(shelf.bookId);
+              const book = bookMap.get(shelf.bookId);
               if (!book) return null;
 
               return (

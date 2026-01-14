@@ -60,6 +60,7 @@ export default function AddBookModal({
     } catch {
       toast.error("Failed to load genres!");
       setGenres([]);
+    } finally {
     }
   };
 

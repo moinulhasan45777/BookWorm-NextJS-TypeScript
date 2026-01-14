@@ -8,7 +8,6 @@ import { FetchedBook } from "@/types/fetchedBook";
 
 export default function ManageBooks() {
   const [allBooks, setAllBooks] = useState<FetchedBook[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
 
   const getAllBooks = async () => {
     try {
@@ -18,7 +17,6 @@ export default function ManageBooks() {
       toast.error("Failed to load Books!");
       setAllBooks([]);
     } finally {
-      setLoading(false);
     }
   };
 

@@ -30,6 +30,7 @@ interface ReadingStats {
   wantToRead: number;
   currentlyReading: number;
   read: number;
+  readThisYear: number;
   topGenres: { genre: string; count: number }[];
   reviewsWritten: number;
   avgProgress: number;
@@ -56,9 +57,6 @@ export default function Home() {
           params: { userId: authContext.userData._id },
         }),
       ]);
-
-      console.log("Recommendations response:", recommendationsRes.data);
-      console.log("Stats response:", statsRes.data);
 
       setRecommendations(recommendationsRes.data);
       setStats(statsRes.data);

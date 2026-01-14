@@ -19,7 +19,7 @@ import "dotenv/config";
 import axios from "axios";
 import { useState } from "react";
 import { toast } from "sonner";
-import { setToken } from "@/lib/token";
+
 import { useAuth } from "@/hooks/useAuth";
 
 export function RegisterForm({
@@ -61,7 +61,7 @@ export function RegisterForm({
 
     await axios
       .post("/api/register", newUser)
-      .then((registrationRes) => {
+      .then(() => {
         toast.success("Registration Successful!");
         setUserData({
           name: newUser.name,
@@ -70,7 +70,6 @@ export function RegisterForm({
           role: newUser.role,
           joiningDate: new Date(newUser.joiningDate),
         });
-        setToken(registrationRes.data.token);
 
         window.location.href = "/reader/home";
       })

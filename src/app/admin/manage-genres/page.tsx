@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { FetchedGenre } from "@/types/fetchedGenre";
 export default function ManageGenres() {
   const [allGenres, setAllGenres] = useState<FetchedGenre[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
 
   const getAllGenres = async () => {
     try {
@@ -18,7 +17,6 @@ export default function ManageGenres() {
       toast.error("Failed to load Genres!");
       setAllGenres([]);
     } finally {
-      setLoading(false);
     }
   };
 

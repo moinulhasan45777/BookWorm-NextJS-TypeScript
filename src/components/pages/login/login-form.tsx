@@ -18,9 +18,7 @@ import { LoginForm as LoginFormType } from "@/types/loginForm";
 import axios from "axios";
 import { useState } from "react";
 import { toast } from "sonner";
-import { setToken } from "@/lib/token";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
 
 export function LoginForm({
   className,
@@ -28,7 +26,6 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const [loading, setLoading] = useState<boolean>(false);
   const { setUserData } = useAuth();
-  const router = useRouter();
 
   const {
     register,
@@ -50,7 +47,6 @@ export function LoginForm({
           role: loginRes.data.user.role,
           joiningDate: new Date(loginRes.data.user.joiningDate),
         });
-        setToken(loginRes.data.token);
 
         const redirectUrl =
           loginRes.data.user.role === "Admin"

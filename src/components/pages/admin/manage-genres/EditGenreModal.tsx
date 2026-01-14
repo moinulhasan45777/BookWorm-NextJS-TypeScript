@@ -15,7 +15,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { GenreType } from "@/types/genreType";
 import { FetchedGenre } from "@/types/fetchedGenre";
-import Swal from "sweetalert2";
+
 import { IconX } from "@tabler/icons-react";
 
 const style = {
@@ -91,7 +91,7 @@ export default function EditGenreModal({
       onGenreUpdated();
       onClose();
       toast.success("Genre updated successfully!");
-    } catch (err) {
+    } catch {
       toast.error("Failed to update genre!");
     } finally {
       setLoading(false);
@@ -143,7 +143,7 @@ export default function EditGenreModal({
                         alt={genre.title}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                      <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent"></div>
                       <div className="absolute bottom-2 left-2 text-white text-sm font-medium">
                         Current Image
                       </div>

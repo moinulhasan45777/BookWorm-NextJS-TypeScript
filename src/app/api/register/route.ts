@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { mongoConnect } from "@/lib/mongoConnect";
 import * as bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
 import { registerLimiter } from "@/lib/rateLimit";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -47,7 +46,7 @@ export async function POST(req: NextRequest) {
       joiningDate: joiningDate,
     };
 
-    await db.collection("users").insertOne(newUser);
+    const result = await db.collection("users").insertOne(newUser);
 
     // generate JWT
     const token = jwt.sign(
@@ -66,7 +65,7 @@ export async function POST(req: NextRequest) {
       {
         success: "Registration Successful!",
         newUser: {
-          _id: newUser._id?.toString(),
+          _id: result.insertedId.toString(),
           name: newUser.name,
           photo: newUser.photo,
           email: newUser.email,

@@ -16,6 +16,7 @@ export default function ManageUsers() {
     } catch {
       toast.error("Failed to load users!");
       setUsers([]);
+    } finally {
     }
   };
 

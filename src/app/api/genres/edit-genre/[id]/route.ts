@@ -35,7 +35,7 @@ export async function PUT(
       { success: "Updated successfully!" },
       { status: 200 }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         error: "Something went wrong!",

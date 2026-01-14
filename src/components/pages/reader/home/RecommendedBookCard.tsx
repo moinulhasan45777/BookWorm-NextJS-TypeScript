@@ -20,7 +20,7 @@ interface RecommendedBookCardProps {
 export default function RecommendedBookCard({
   book,
   reason,
-  topGenres,
+
   genreCounts,
 }: RecommendedBookCardProps) {
   const router = useRouter();

@@ -19,7 +19,7 @@ import "dotenv/config";
 import axios from "axios";
 import { useState } from "react";
 import { toast } from "sonner";
-import { setToken } from "@/lib/token";
+
 import { useAuth } from "@/hooks/useAuth";
 import { GenreType } from "@/types/genreType";
 

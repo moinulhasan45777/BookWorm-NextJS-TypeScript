@@ -44,6 +44,7 @@ export default function Page() {
       setNumberOfReviews(res.data);
     } catch {
       setNumberOfReviews(0);
+    } finally {
     }
   };
 
