@@ -29,6 +29,15 @@ export async function GET(request: NextRequest) {
     ).length;
     const read = shelves.filter((s) => s.shelf === "Read").length;
 
+    const currentYear = new Date().getFullYear();
+    const yearStart = new Date(currentYear, 0, 1);
+    const readThisYear = shelves.filter(
+      (s) =>
+        s.shelf === "Read" &&
+        s.dateFinished &&
+        new Date(s.dateFinished) >= yearStart
+    ).length;
+
     const readBookIds = shelves
       .filter((s) => s.shelf === "Read")
       .map((s) => s.bookId);
@@ -64,6 +73,7 @@ export async function GET(request: NextRequest) {
       wantToRead,
       currentlyReading,
       read,
+      readThisYear,
       topGenres,
       reviewsWritten: userReviews,
       avgProgress: Math.round(avgProgress),

@@ -1,11 +1,7 @@
 "use client";
 
-import { IconTrendingUp } from "@tabler/icons-react";
-
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
-  CardAction,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -17,12 +13,14 @@ interface SectionCardsProps {
   numberOfUsers: number;
   numberOfBooks: number;
   numberOfGenres: number;
+  numberOfReviews: number;
 }
 
 export function SectionCards({
   numberOfUsers,
   numberOfBooks,
   numberOfGenres,
+  numberOfReviews,
 }: SectionCardsProps) {
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -85,22 +83,21 @@ export function SectionCards({
       </Card>
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
+          <CardDescription>Pending Reviews</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
+            {numberOfReviews}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +4.5%
-            </Badge>
-          </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance increase <IconTrendingUp className="size-4" />
+            Reviews awaiting moderation
           </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
+          <Link
+            href="/admin/moderate-reviews"
+            className="text-muted-foreground underline hover:text-primary"
+          >
+            Moderate Reviews
+          </Link>
         </CardFooter>
       </Card>
     </div>

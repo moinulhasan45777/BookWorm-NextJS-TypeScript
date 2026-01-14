@@ -16,6 +16,7 @@ interface ReadingStatsCardProps {
     wantToRead: number;
     currentlyReading: number;
     read: number;
+    readThisYear: number;
     topGenres: { genre: string; count: number }[];
     reviewsWritten: number;
     avgProgress: number;
@@ -43,7 +44,9 @@ export default function ReadingStatsCard({ stats }: ReadingStatsCardProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.read}</div>
-          <p className="text-xs text-muted-foreground mt-1">Completed books</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {stats.readThisYear} this year
+          </p>
         </CardContent>
       </Card>
 
