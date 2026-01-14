@@ -8,8 +8,10 @@ import { toast } from "sonner";
 import { FetchedGenre } from "@/types/fetchedGenre";
 export default function ManageGenres() {
   const [allGenres, setAllGenres] = useState<FetchedGenre[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const getAllGenres = async () => {
+    setLoading(true);
     try {
       const result = await axios.get("/api/genres");
       setAllGenres(result.data);
@@ -17,12 +19,21 @@ export default function ManageGenres() {
       toast.error("Failed to load Genres!");
       setAllGenres([]);
     } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     getAllGenres();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-6">

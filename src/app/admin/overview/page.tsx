@@ -10,6 +10,7 @@ export default function Page() {
   const [numberOfGenres, setNumberOfGenres] = useState<number>(0);
   const [numberOfReviews, setNumberOfReviews] = useState<number>(0);
   const [numberOfUsers, setNumberOfUsers] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const getUsers = async () => {
     try {
@@ -44,16 +45,25 @@ export default function Page() {
       setNumberOfReviews(res.data);
     } catch {
       setNumberOfReviews(0);
-    } finally {
     }
   };
 
   useEffect(() => {
-    getUsers();
-    getBooks();
-    getGenres();
-    getReviews();
+    const fetchData = async () => {
+      setLoading(true);
+      await Promise.all([getUsers(), getBooks(), getGenres(), getReviews()]);
+      setLoading(false);
+    };
+    fetchData();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="@container/main flex flex-1 flex-col gap-2">
