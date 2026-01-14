@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search") || "";
     const genres = searchParams.get("genres") || "";
     const rating = searchParams.get("rating") || "";
+    const sortBy = searchParams.get("sortBy") || "";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "12");
 
@@ -43,38 +44,75 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .toArray();
 
-    // Filter by rating if specified
+    const bookIds = books.map((book) => book._id.toString());
+
+    const reviewsAggregation = await db
+      .collection("reviews")
+      .aggregate([
+        {
+          $match: {
+            bookId: { $in: bookIds },
+            status: "Approved",
+          },
+        },
+        {
+          $group: {
+            _id: "$bookId",
+            avgRating: { $avg: "$rating" },
+            reviewCount: { $sum: 1 },
+          },
+        },
+      ])
+      .toArray();
+
+    const bookRatings = new Map(
+      reviewsAggregation.map((r) => [
+        r._id,
+        { avgRating: r.avgRating, reviewCount: r.reviewCount },
+      ])
+    );
+
+    const shelvesAggregation = await db
+      .collection("user_shelves")
+      .aggregate([
+        {
+          $match: {
+            bookId: { $in: bookIds },
+          },
+        },
+        {
+          $group: {
+            _id: "$bookId",
+            shelfCount: { $sum: 1 },
+          },
+        },
+      ])
+      .toArray();
+
+    const bookShelves = new Map(
+      shelvesAggregation.map((s) => [s._id, s.shelfCount])
+    );
+
     if (rating && rating !== "all") {
       const [minRating, maxRating] = rating.split("-").map(parseFloat);
-      const bookIds = books.map((book) => book._id.toString());
-
-      // Get average ratings for these books
-      const reviewsAggregation = await db
-        .collection("reviews")
-        .aggregate([
-          {
-            $match: {
-              bookId: { $in: bookIds },
-              status: "Approved",
-            },
-          },
-          {
-            $group: {
-              _id: "$bookId",
-              avgRating: { $avg: "$rating" },
-            },
-          },
-        ])
-        .toArray();
-
-      const bookRatings = new Map(
-        reviewsAggregation.map((r) => [r._id, r.avgRating])
-      );
-
       books = books.filter((book) => {
         const bookId = book._id.toString();
-        const avgRating = bookRatings.get(bookId) || 0;
+        const avgRating = bookRatings.get(bookId)?.avgRating || 0;
         return avgRating >= minRating && avgRating <= maxRating;
+      });
+    }
+
+    if (sortBy === "rating") {
+      books.sort((a, b) => {
+        const aRating = bookRatings.get(a._id.toString())?.avgRating || 0;
+        const bRating = bookRatings.get(b._id.toString())?.avgRating || 0;
+        return bRating - aRating;
+      });
+    } else if (sortBy === "mostShelved") {
+      books.sort((a, b) => {
+        const aCount = bookShelves.get(a._id.toString()) || 0;
+        const bCount = bookShelves.get(b._id.toString()) || 0;
+        return bCount - aCount;
       });
     }
 

@@ -25,6 +25,7 @@ export default function BrowseBooks() {
   const [search, setSearch] = useState<string>("");
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedRating, setSelectedRating] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalBooks, setTotalBooks] = useState<number>(0);
@@ -52,6 +53,7 @@ export default function BrowseBooks() {
             search,
             genres: selectedGenres.join(","),
             rating: selectedRating,
+            sortBy,
             page: currentPage,
             limit: pageSize,
           },
@@ -67,7 +69,7 @@ export default function BrowseBooks() {
     };
 
     fetchData();
-  }, [search, selectedGenres, selectedRating, currentPage, pageSize]);
+  }, [search, selectedGenres, selectedRating, sortBy, currentPage, pageSize]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -90,9 +92,15 @@ export default function BrowseBooks() {
     setCurrentPage(1);
   };
 
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort);
+    setCurrentPage(1);
+  };
+
   const clearAllFilters = () => {
     setSelectedGenres([]);
     setSelectedRating("all");
+    setSortBy("");
     setSearch("");
     setCurrentPage(1);
   };
@@ -108,7 +116,10 @@ export default function BrowseBooks() {
   };
 
   const hasActiveFilters =
-    selectedGenres.length > 0 || selectedRating !== "all" || search !== "";
+    selectedGenres.length > 0 ||
+    selectedRating !== "all" ||
+    sortBy !== "" ||
+    search !== "";
 
   return (
     <div className="py-8">
@@ -127,19 +138,32 @@ export default function BrowseBooks() {
               className="w-full"
             />
           </div>
-          <div className="w-full md:w-64">
-            <Select value={selectedRating} onValueChange={handleRatingChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by Rating" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Ratings</SelectItem>
-                <SelectItem value="4-5">4-5 Stars</SelectItem>
-                <SelectItem value="3-4">3-4 Stars</SelectItem>
-                <SelectItem value="2-3">2-3 Stars</SelectItem>
-                <SelectItem value="1-2">1-2 Stars</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex gap-4">
+            <div className="w-full md:w-48">
+              <Select value={selectedRating} onValueChange={handleRatingChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by Rating" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Ratings</SelectItem>
+                  <SelectItem value="4-5">4-5 Stars</SelectItem>
+                  <SelectItem value="3-4">3-4 Stars</SelectItem>
+                  <SelectItem value="2-3">2-3 Stars</SelectItem>
+                  <SelectItem value="1-2">1-2 Stars</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-full md:w-48">
+              <Select value={sortBy} onValueChange={handleSortChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rating">Highest Rated</SelectItem>
+                  <SelectItem value="mostShelved">Most Shelved</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
