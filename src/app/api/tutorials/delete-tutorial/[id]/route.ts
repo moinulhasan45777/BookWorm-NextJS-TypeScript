@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/auth";
+import { mongoConnect } from "@/lib/mongoConnect";
 
 export async function DELETE(
   request: NextRequest,
@@ -19,8 +19,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db("bookworm");
+    const { db } = await mongoConnect();
 
     const result = await db
       .collection("tutorials")

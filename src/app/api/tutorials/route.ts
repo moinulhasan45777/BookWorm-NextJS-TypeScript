@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth";
+import { mongoConnect } from "@/lib/mongoConnect";
 
 export async function GET() {
   try {
-    const client = await clientPromise;
-    const db = client.db("bookworm");
+    const { db } = await mongoConnect();
 
     const tutorials = await db
       .collection("tutorials")
@@ -39,8 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const client = await clientPromise;
-    const db = client.db("bookworm");
+    const { db } = await mongoConnect();
 
     const result = await db.collection("tutorials").insertOne({
       title,
