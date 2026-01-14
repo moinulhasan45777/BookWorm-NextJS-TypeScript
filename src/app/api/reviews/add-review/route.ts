@@ -1,12 +1,17 @@
 import { mongoConnect } from "@/lib/mongoConnect";
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
+  const authCheck = requireAuth(req);
+  if (!authCheck.success) {
+    return authCheck.response;
+  }
+
   try {
     const { db } = await mongoConnect();
     const newReview = await req.json();
 
-    // Check if user already submitted a review for this book
     const existingReview = await db.collection("reviews").findOne({
       bookId: newReview.bookId,
       userId: newReview.userId,

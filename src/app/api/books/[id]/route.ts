@@ -1,11 +1,17 @@
 import { mongoConnect } from "@/lib/mongoConnect";
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import { requireAuth } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authCheck = requireAuth(request);
+  if (!authCheck.success) {
+    return authCheck.response;
+  }
+
   try {
     const { id } = await params;
     const { db } = await mongoConnect();

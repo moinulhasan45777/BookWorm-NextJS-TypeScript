@@ -1,32 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-import axios from "axios";
+import { verifyToken } from "./lib/auth";
 
 export async function proxy(req: NextRequest) {
   const token = req.cookies.get("bookworm_token")?.value;
   const { pathname } = req.nextUrl;
 
   if ((token && pathname === "/register") || (token && pathname === "/")) {
-    try {
-      const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as {
-        email: string;
-      };
-      const baseUrl = req.nextUrl.origin;
-      const res = await axios.get(
-        `${baseUrl}/api/users/user?email=${decodedToken.email}`
-      );
-
+    const decodedToken = verifyToken(token);
+    if (decodedToken) {
       const redirectUrl =
-        res.data.role === "Admin" ? "/admin/overview" : "/reader/my-library";
+        decodedToken.role === "Admin"
+          ? "/admin/overview"
+          : "/reader/my-library";
       return NextResponse.redirect(new URL(redirectUrl, req.url));
-    } catch {
-      return NextResponse.next();
     }
+    return NextResponse.next();
   }
 
   if (!token && pathname !== "/register" && pathname !== "/") {
     return NextResponse.redirect(new URL("/", req.url));
   }
+
+  if (token) {
+    const decodedToken = verifyToken(token);
+    if (!decodedToken) {
+      const response = NextResponse.redirect(new URL("/", req.url));
+      response.cookies.delete("bookworm_token");
+      return response;
+    }
+
+    if (pathname.startsWith("/admin") && decodedToken.role !== "Admin") {
+      return NextResponse.redirect(new URL("/reader/my-library", req.url));
+    }
+
+    if (pathname.startsWith("/reader") && decodedToken.role === "Admin") {
+      return NextResponse.redirect(new URL("/admin/overview", req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 

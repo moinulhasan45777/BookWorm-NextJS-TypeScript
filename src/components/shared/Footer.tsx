@@ -4,7 +4,7 @@ import Link from "next/link";
 import { josefin } from "@/fonts/fonts";
 import {
   IconBrandFacebook,
-  IconBrandTwitter,
+  IconBrandX,
   IconBrandInstagram,
   IconBrandLinkedin,
 } from "@tabler/icons-react";
@@ -20,15 +20,15 @@ export default function Footer() {
       { label: "Tutorials", href: "/reader/tutorials" },
     ],
     resources: [
-      { label: "About Us", href: "/about" },
-      { label: "Contact", href: "/contact" },
-      { label: "FAQ", href: "/faq" },
-      { label: "Support", href: "/support" },
+      { label: "About Us", href: "#" },
+      { label: "Contact", href: "#" },
+      { label: "FAQ", href: "#" },
+      { label: "Support", href: "#" },
     ],
     legal: [
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms of Service", href: "/terms" },
-      { label: "Cookie Policy", href: "/cookies" },
+      { label: "Privacy Policy", href: "#" },
+      { label: "Terms of Service", href: "#" },
+      { label: "Cookie Policy", href: "#" },
     ],
   };
 
@@ -38,7 +38,7 @@ export default function Footer() {
       href: "https://facebook.com",
       label: "Facebook",
     },
-    { icon: IconBrandTwitter, href: "https://twitter.com", label: "Twitter" },
+    { icon: IconBrandX, href: "https://x.com", label: "X" },
     {
       icon: IconBrandInstagram,
       href: "https://instagram.com",
@@ -58,7 +58,7 @@ export default function Footer() {
           <div className="space-y-4">
             <Link
               href="/reader/home"
-              className={`text-2xl font-bold ${josefin.className}`}
+              className={`text-2xl font-bold text-primary ${josefin.className}`}
             >
               BookWorm
             </Link>
@@ -101,7 +101,7 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Resources</h3>
             <ul className="space-y-2">
               {footerLinks.resources.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
@@ -117,7 +117,7 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"

@@ -1,7 +1,17 @@
 import { mongoConnect } from "@/lib/mongoConnect";
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth";
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 export async function GET(request: NextRequest) {
+  const authCheck = requireAuth(request);
+  if (!authCheck.success) {
+    return authCheck.response;
+  }
+
   try {
     const { db } = await mongoConnect();
     const searchParams = request.nextUrl.searchParams;
@@ -24,9 +34,10 @@ export async function GET(request: NextRequest) {
     } = {};
 
     if (search) {
+      const sanitizedSearch = escapeRegex(search);
       filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { author: { $regex: search, $options: "i" } },
+        { title: { $regex: sanitizedSearch, $options: "i" } },
+        { author: { $regex: sanitizedSearch, $options: "i" } },
       ];
     }
 

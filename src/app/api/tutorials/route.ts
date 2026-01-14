@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { requireAdmin } from "@/lib/auth";
 
 export async function GET() {
   try {
@@ -22,6 +23,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const authCheck = requireAdmin(request);
+  if (!authCheck.success) {
+    return authCheck.response;
+  }
+
   try {
     const body = await request.json();
     const { title, youtubeLink } = body;

@@ -74,7 +74,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           <Link
             href="/reader/home"
-            className={`text-2xl font-bold ${josefin.className}`}
+            className={`text-2xl font-bold text-primary ${josefin.className}`}
           >
             BookWorm
           </Link>

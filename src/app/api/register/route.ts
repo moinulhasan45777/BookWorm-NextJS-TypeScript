@@ -3,6 +3,7 @@ import { mongoConnect } from "@/lib/mongoConnect";
 import * as bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { registerLimiter } from "@/lib/rateLimit";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) {
@@ -10,6 +11,11 @@ if (!JWT_SECRET) {
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = registerLimiter(req);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const { db } = await mongoConnect();
     const { name, photo, email, password, role, joiningDate } =
@@ -86,8 +92,9 @@ export async function POST(req: NextRequest) {
 
     return res;
   } catch (err: unknown) {
+    console.error("Registration error:", err);
     return NextResponse.json(
-      { error: "Internal server error", err },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
