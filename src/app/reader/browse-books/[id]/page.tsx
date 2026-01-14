@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import LeaveReviewSection from "@/components/pages/reader/browse-books/LeaveReviewSection";
 import ReviewsSection from "@/components/pages/reader/browse-books/ReviewsSection";
+import AddToShelfSection from "@/components/pages/reader/browse-books/AddToShelfSection";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function BookDetails() {
@@ -137,15 +138,25 @@ export default function BookDetails() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h1 className={`text-4xl font-bold mb-2 ${josefin.className}`}>
-              {book.title}
-            </h1>
-            <p className="text-xl text-muted-foreground mb-4">
-              by {book.author}
-            </p>
-            <Badge variant="outline" className="text-base px-3 py-1">
-              {book.genre}
-            </Badge>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className={`text-4xl font-bold mb-2 ${josefin.className}`}>
+                  {book.title}
+                </h1>
+                <p className="text-xl text-muted-foreground mb-4">
+                  by {book.author}
+                </p>
+                <Badge variant="outline" className="text-base px-3 py-1">
+                  {book.genre}
+                </Badge>
+              </div>
+              {authContext?.userData?._id && (
+                <AddToShelfSection
+                  bookId={book._id}
+                  userId={authContext.userData._id}
+                />
+              )}
+            </div>
           </motion.div>
 
           <motion.div
