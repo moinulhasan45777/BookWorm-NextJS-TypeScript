@@ -82,6 +82,72 @@ export default function LibraryBookCard({
         )}
 
         <div
+          className="absolute top-0 right-0 z-20"
+          style={{ transform: "translate(8px, -8px)" }}
+        >
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="bg-primary text-primary-foreground rounded-full p-2 transition-all shadow-lg hover:scale-110 hover:shadow-xl">
+                <IconDotsVertical className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {shelf.shelf === "Want to Read" && (
+                <DropdownMenuItem
+                  onClick={() => onStartReading(shelf._id)}
+                  className="cursor-pointer"
+                >
+                  <IconPlayerPlay className="h-4 w-4 mr-2" />
+                  Start Reading
+                </DropdownMenuItem>
+              )}
+              {shelf.shelf === "Currently Reading" && (
+                <DropdownMenuItem
+                  onClick={(e) => e.preventDefault()}
+                  className="flex-col items-start gap-3 py-3"
+                >
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Update Progress
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={tempProgress}
+                    onChange={handleProgressChange}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <div className="flex items-center justify-between w-full gap-2">
+                    <span className="text-sm font-bold text-primary">
+                      {tempProgress}%
+                    </span>
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUpdateClick();
+                      }}
+                      className="h-7 px-3 text-xs"
+                    >
+                      <IconCheck className="h-3 w-3 mr-1" />
+                      Update
+                    </Button>
+                  </div>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() => onRemove(shelf._id)}
+                className="cursor-pointer text-red-600 focus:text-red-600"
+              >
+                <IconTrash className="h-4 w-4 mr-2" />
+                Remove
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div
           className="relative w-full h-full rounded-md overflow-hidden border-2 border-gray-300/70"
           style={{
             transform: "rotateY(-3deg)",
@@ -139,72 +205,6 @@ export default function LibraryBookCard({
             }}
           ></div>
         </div>
-      </div>
-
-      <div
-        className="absolute top-0 right-0 z-20"
-        style={{ transform: "translate(8px, -8px)" }}
-      >
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="bg-primary text-primary-foreground rounded-full p-2 transition-all shadow-lg hover:scale-110 hover:shadow-xl">
-              <IconDotsVertical className="h-4 w-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            {shelf.shelf === "Want to Read" && (
-              <DropdownMenuItem
-                onClick={() => onStartReading(shelf._id)}
-                className="cursor-pointer"
-              >
-                <IconPlayerPlay className="h-4 w-4 mr-2" />
-                Start Reading
-              </DropdownMenuItem>
-            )}
-            {shelf.shelf === "Currently Reading" && (
-              <DropdownMenuItem
-                onClick={(e) => e.preventDefault()}
-                className="flex-col items-start gap-3 py-3"
-              >
-                <span className="text-xs font-medium text-muted-foreground">
-                  Update Progress
-                </span>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={tempProgress}
-                  onChange={handleProgressChange}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-                <div className="flex items-center justify-between w-full gap-2">
-                  <span className="text-sm font-bold text-primary">
-                    {tempProgress}%
-                  </span>
-                  <Button
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleUpdateClick();
-                    }}
-                    className="h-7 px-3 text-xs"
-                  >
-                    <IconCheck className="h-3 w-3 mr-1" />
-                    Update
-                  </Button>
-                </div>
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem
-              onClick={() => onRemove(shelf._id)}
-              className="cursor-pointer text-red-600 focus:text-red-600"
-            >
-              <IconTrash className="h-4 w-4 mr-2" />
-              Remove
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </div>
   );
