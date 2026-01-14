@@ -59,7 +59,14 @@ export async function POST(req: NextRequest) {
     const res = NextResponse.json(
       {
         success: "Registration Successful!",
-        newUser,
+        newUser: {
+          _id: newUser._id?.toString(),
+          name: newUser.name,
+          photo: newUser.photo,
+          email: newUser.email,
+          role: newUser.role,
+          joiningDate: newUser.joiningDate,
+        },
         token,
       },
       {

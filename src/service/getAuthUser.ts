@@ -23,7 +23,6 @@ export async function getAuthUser() {
       { email: decoded.email },
       {
         projection: {
-          _id: 0,
           password: 0,
         },
       }
@@ -32,6 +31,7 @@ export async function getAuthUser() {
     if (!user) return null;
 
     return {
+      _id: user._id.toString(),
       name: user.name,
       photo: user.photo,
       email: user.email,

@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
       {
         success: "Login Successful!",
         user: {
+          _id: user._id.toString(),
           name: user.name,
           photo: user.photo,
           email: user.email,
