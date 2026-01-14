@@ -122,58 +122,57 @@ export default function ManageTutorials() {
   }
 
   return (
-    <div className="mx-6 py-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div className="mx-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-4">
         <h1 className="text-3xl font-semibold">Manage Tutorials</h1>
-
         <Button onClick={() => setOpen(true)}>
           <IconPlus className="h-4 w-4 mr-2" />
           Add Tutorial
         </Button>
-
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Add New Tutorial</h2>
-              <button
-                onClick={handleClose}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <IconX className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter tutorial title"
-                />
-              </div>
-              <div>
-                <Label htmlFor="youtubeLink">YouTube Link</Label>
-                <Input
-                  id="youtubeLink"
-                  value={youtubeLink}
-                  onChange={(e) => setYoutubeLink(e.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? "Adding..." : "Add Tutorial"}
-              </Button>
-            </form>
-          </Box>
-        </Modal>
       </div>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Add New Tutorial</h2>
+            <button
+              onClick={handleClose}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <IconX className="h-5 w-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter tutorial title"
+              />
+            </div>
+            <div>
+              <Label htmlFor="youtubeLink">YouTube Link</Label>
+              <Input
+                id="youtubeLink"
+                value={youtubeLink}
+                onChange={(e) => setYoutubeLink(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "Adding..." : "Add Tutorial"}
+            </Button>
+          </form>
+        </Box>
+      </Modal>
 
       {tutorials.length === 0 ? (
         <div className="flex flex-col justify-center items-center py-20">
