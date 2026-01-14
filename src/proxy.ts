@@ -17,7 +17,7 @@ export async function proxy(req: NextRequest) {
       );
 
       const redirectUrl =
-        res.data.role === "Admin" ? "/admin/overview" : "/reader/home";
+        res.data.role === "Admin" ? "/admin/overview" : "/reader/my-library";
       return NextResponse.redirect(new URL(redirectUrl, req.url));
     } catch {
       return NextResponse.next();
