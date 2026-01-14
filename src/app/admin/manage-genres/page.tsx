@@ -28,16 +28,8 @@ export default function ManageGenres() {
 
   return (
     <div className="mx-6">
-      <div
-        className="mt-7 mb-8
-      ml-5 flex justify-between items-center"
-      >
-        <h1
-          className="text-3xl
-       font-semibold  "
-        >
-          Manage Genres
-        </h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-4">
+        <h1 className="text-3xl font-semibold">Manage Genres</h1>
         <AddGenreModal onGenreAdded={getAllGenres} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-x-2 gap-y-7">

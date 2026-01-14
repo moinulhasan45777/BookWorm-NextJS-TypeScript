@@ -16,7 +16,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { IconDotsVertical, IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconDotsVertical, IconUserEdit } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,16 +34,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FetchedBook } from "@/types/fetchedBook";
-import AddBookModal from "@/components/pages/admin/manage-books/AddBookModal";
-import EditBookModal from "@/components/pages/admin/manage-books/EditBookModal";
+import { FetchedUser } from "@/types/fetchedUser";
 
-interface BooksDataTableProps {
-  data: FetchedBook[];
-  onBookAdded?: () => void;
+interface UsersDataTableProps {
+  data: FetchedUser[];
+  onUserUpdated?: () => void;
 }
 
-export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
+export function UsersDataTable({ data, onUserUpdated }: UsersDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -51,36 +49,31 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [editModalOpen, setEditModalOpen] = React.useState(false);
-  const [selectedBook, setSelectedBook] = React.useState<FetchedBook | null>(
-    null
-  );
 
-  const handleEdit = (book: FetchedBook) => {
-    setSelectedBook(book);
-    setEditModalOpen(true);
-  };
+  const handleChangeRole = (user: FetchedUser) => {
+    const newRole = user.role === "Admin" ? "Normal" : "Admin";
 
-  const handleDelete = (book: FetchedBook) => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
+      title: "Change User Role?",
+      text: `Change ${user.name}'s role from ${user.role} to ${newRole}?`,
+      icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
+      confirmButtonText: "Yes, change it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/books/delete-book/${book._id}`);
+          await axios.put(`/api/users/change-role/${user._id}`, {
+            role: newRole,
+          });
           Swal.fire({
-            title: "Deleted!",
-            text: "Book has been deleted.",
+            title: "Updated!",
+            text: `User role has been changed to ${newRole}.`,
             icon: "success",
           });
-          if (onBookAdded) {
-            onBookAdded();
+          if (onUserUpdated) {
+            onUserUpdated();
           }
         } catch {
           Swal.fire({
@@ -94,79 +87,99 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
     });
   };
 
-  const columns: ColumnDef<FetchedBook>[] = [
-    {
-      accessorKey: "title",
-      header: "Title",
-      size: 300,
-      cell: ({ row }) => (
-        <div className="font-medium truncate pl-4">{row.original.title}</div>
-      ),
-      enableHiding: false,
-    },
-    {
-      accessorKey: "author",
-      header: "Author",
-      size: 200,
-      cell: ({ row }) => <div className="truncate">{row.original.author}</div>,
-    },
-    {
-      accessorKey: "genre",
-      header: "Genre",
-      size: 150,
-      cell: ({ row }) => (
-        <Badge
-          variant="outline"
-          className="text-muted-foreground px-1.5 truncate"
-        >
-          {row.original.genre}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "coverImage",
-      header: "Cover Thumbnail",
-      size: 120,
-      cell: ({ row }) => (
-        <div className="w-12 h-16 rounded overflow-hidden relative">
-          <Image
-            src={row.original.coverImage}
-            alt={row.original.title}
-            fill
-            className="object-cover"
-          />
-        </div>
-      ),
-    },
-    {
-      id: "actions",
-      header: () => null,
-      size: 80,
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <IconDotsVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleEdit(row.original)}>
-              <IconEdit className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
-              onClick={() => handleDelete(row.original)}
-            >
-              <IconTrash className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ];
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date
+      .toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      })
+      .toUpperCase();
+  };
+
+  const columns: ColumnDef<FetchedUser>[] = React.useMemo(
+    () => [
+      {
+        accessorKey: "photo",
+        header: "Photo",
+        size: 80,
+        cell: ({ row }) => (
+          <div className="w-10 h-10 rounded-full overflow-hidden relative pl-4">
+            <Image
+              src={row.original.photo}
+              alt={row.original.name}
+              fill
+              className="object-cover"
+            />
+          </div>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: "Name",
+        size: 250,
+        cell: ({ row }) => (
+          <div className="font-medium truncate">{row.original.name}</div>
+        ),
+        enableHiding: false,
+      },
+      {
+        accessorKey: "email",
+        header: "Email",
+        size: 250,
+        cell: ({ row }) => <div className="truncate">{row.original.email}</div>,
+      },
+      {
+        accessorKey: "role",
+        header: "Role",
+        size: 120,
+        cell: ({ row }) => (
+          <Badge
+            variant="outline"
+            className={`px-2 truncate ${
+              row.original.role === "Admin"
+                ? "bg-blue-50 text-blue-700 border-blue-200"
+                : "bg-gray-50 text-gray-700 border-gray-200"
+            }`}
+          >
+            {row.original.role}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "joiningDate",
+        header: "Joining Date",
+        size: 150,
+        cell: ({ row }) => (
+          <div className="text-sm text-muted-foreground">
+            {formatDate(row.original.joiningDate)}
+          </div>
+        ),
+      },
+      {
+        id: "actions",
+        header: () => null,
+        size: 80,
+        cell: ({ row }) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <IconDotsVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleChangeRole(row.original)}>
+                <IconUserEdit className="mr-2 h-4 w-4" />
+                Change Role
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+      },
+    ],
+    []
+  );
 
   const table = useReactTable({
     data,
@@ -195,17 +208,16 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
   return (
     <div className="w-full">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-4">
-        <h1 className="text-3xl font-semibold">Manage Books</h1>
+        <h1 className="text-3xl font-semibold">Manage Users</h1>
         <div className="flex items-center gap-2">
           <Input
-            placeholder="Filter books..."
-            value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+            placeholder="Filter by name..."
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("title")?.setFilterValue(event.target.value)
+              table.getColumn("name")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
-          <AddBookModal onBookAdded={onBookAdded || (() => {})} />
         </div>
       </div>
       <div className="rounded-md border">
@@ -217,7 +229,7 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
                   return (
                     <TableHead
                       key={header.id}
-                      className={header.id === "title" ? "pl-4" : ""}
+                      className={header.id === "photo" ? "pl-4" : ""}
                     >
                       {header.isPlaceholder
                         ? null
@@ -254,7 +266,7 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No books found.
+                  No users found.
                 </TableCell>
               </TableRow>
             )}
@@ -264,7 +276,7 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
       <div className="flex items-center justify-between py-4">
         <div className="flex items-center gap-4">
           <div className="text-sm text-muted-foreground">
-            {table.getFilteredRowModel().rows.length} book(s) total
+            {table.getFilteredRowModel().rows.length} user(s) total
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
@@ -326,18 +338,6 @@ export function BooksDataTable({ data, onBookAdded }: BooksDataTableProps) {
           </div>
         </div>
       </div>
-      {selectedBook && (
-        <EditBookModal
-          book={selectedBook}
-          open={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
-          onBookUpdated={() => {
-            if (onBookAdded) {
-              onBookAdded();
-            }
-          }}
-        />
-      )}
     </div>
   );
 }
