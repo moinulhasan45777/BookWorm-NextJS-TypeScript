@@ -57,7 +57,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: "Manage Tutorials",
-        url: "/manage-tutorials",
+        url: "/admin/manage-tutorials",
         icon: IconFolder,
       },
     ],
