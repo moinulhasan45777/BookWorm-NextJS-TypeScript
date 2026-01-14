@@ -118,9 +118,10 @@ export default function GenreDistributionChart({ userId }: { userId: string }) {
               itemStyle={{ color: "#000000" }}
             />
             <Legend
-              formatter={(value, entry) =>
-                (entry as { payload: GenreData }).payload.genre
-              }
+              formatter={(value, entry) => {
+                const payload = entry.payload as unknown as GenreData;
+                return payload.genre;
+              }}
             />
           </PieChart>
         </ResponsiveContainer>

@@ -59,7 +59,16 @@ export async function GET(req: NextRequest) {
     const userMap = new Map(users.map((u) => [u._id.toString(), u.name]));
     const bookMap = new Map(books.map((b) => [b._id.toString(), b.title]));
 
-    const activities = [];
+    const activities: Array<{
+      type: string;
+      userName: string;
+      bookTitle: string;
+      bookId: string;
+      timestamp: Date;
+      message: string;
+      shelf?: string;
+      rating?: number;
+    }> = [];
 
     recentShelves.forEach((shelf) => {
       const userName = userMap.get(shelf.userId) || "Unknown User";
