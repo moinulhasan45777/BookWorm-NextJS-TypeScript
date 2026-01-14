@@ -16,34 +16,37 @@ interface ReviewsSectionProps {
 }
 
 export default function ReviewsSection({ bookId }: ReviewsSectionProps) {
-  const [reviews, setReviews] = useState<FetchedReview[]>([]);
-  const [users, setUsers] = useState<FetchedUser[]>([]);
+  const [reviews, setReviews] = useState<
+    (FetchedReview & { user?: FetchedUser | null })[]
+  >([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const reviewsPerPage = 5;
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
       try {
-        const [reviewsRes, usersRes] = await Promise.all([
-          axios.get(`/api/reviews/book/${bookId}`),
-          axios.get("/api/users"),
-        ]);
+        const reviewsRes = await axios.get(`/api/reviews/book/${bookId}`, {
+          signal: controller.signal,
+        });
         setReviews(reviewsRes.data);
-        setUsers(usersRes.data);
-      } catch {
-        console.error("Failed to fetch reviews");
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          // Request was cancelled, don't log error
+          return;
+        }
+        console.error("Failed to fetch reviews:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [bookId]);
 
-  const getUserById = (userId: string): FetchedUser | null => {
-    return users.find((user) => user._id === userId) || null;
-  };
+    return () => controller.abort();
+  }, [bookId]);
 
   const renderStars = (rating: number) => {
     return (
@@ -124,7 +127,7 @@ export default function ReviewsSection({ bookId }: ReviewsSectionProps) {
 
       <div className="space-y-4">
         {currentReviews.map((review) => {
-          const user = getUserById(review.userId);
+          const user = review.user;
           return (
             <Card key={review._id} className="overflow-hidden">
               <CardContent className="p-6">

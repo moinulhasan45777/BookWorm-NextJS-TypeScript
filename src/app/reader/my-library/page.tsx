@@ -46,7 +46,12 @@ export default function MyLibrary() {
         setShelves(shelvesRes.data);
         setBooks(booksRes.data);
         hasLoadedOnceRef.current = true;
-      } catch {
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          // Request was cancelled, don't show error
+          return;
+        }
+        console.error("Failed to load library:", error);
         toast.error("Failed to load library!");
       } finally {
         if (showGlobalLoader) setLoading(false);
@@ -77,7 +82,12 @@ export default function MyLibrary() {
         setShelves(shelvesRes.data);
         setBooks(booksRes.data);
         hasLoadedOnceRef.current = true;
-      } catch {
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          // Request was cancelled, don't show error
+          return;
+        }
+        console.error("Failed to load library:", error);
         toast.error("Failed to load library!");
       } finally {
         setLoading(false);
