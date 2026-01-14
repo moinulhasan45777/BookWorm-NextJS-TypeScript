@@ -14,14 +14,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { josefin } from "@/fonts/fonts";
+import { IconX } from "@tabler/icons-react";
 
 export default function BrowseBooks() {
   const [books, setBooks] = useState<FetchedBook[]>([]);
   const [genres, setGenres] = useState<FetchedGenre[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>("");
-  const [selectedGenre, setSelectedGenre] = useState<string>("all");
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [selectedRating, setSelectedRating] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalBooks, setTotalBooks] = useState<number>(0);
@@ -47,7 +50,8 @@ export default function BrowseBooks() {
         const response = await axios.get("/api/books/browse", {
           params: {
             search,
-            genre: selectedGenre,
+            genres: selectedGenres.join(","),
+            rating: selectedRating,
             page: currentPage,
             limit: pageSize,
           },
@@ -63,15 +67,33 @@ export default function BrowseBooks() {
     };
 
     fetchData();
-  }, [search, selectedGenre, currentPage, pageSize]);
+  }, [search, selectedGenres, selectedRating, currentPage, pageSize]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
     setCurrentPage(1);
   };
 
-  const handleGenreChange = (value: string) => {
-    setSelectedGenre(value);
+  const handleGenreToggle = (genreTitle: string) => {
+    setSelectedGenres((prev) => {
+      if (prev.includes(genreTitle)) {
+        return prev.filter((g) => g !== genreTitle);
+      } else {
+        return [...prev, genreTitle];
+      }
+    });
+    setCurrentPage(1);
+  };
+
+  const handleRatingChange = (rating: string) => {
+    setSelectedRating(rating);
+    setCurrentPage(1);
+  };
+
+  const clearAllFilters = () => {
+    setSelectedGenres([]);
+    setSelectedRating("all");
+    setSearch("");
     setCurrentPage(1);
   };
 
@@ -85,36 +107,86 @@ export default function BrowseBooks() {
     setCurrentPage(1);
   };
 
+  const hasActiveFilters =
+    selectedGenres.length > 0 || selectedRating !== "all" || search !== "";
+
   return (
     <div className="py-8">
       <h1 className={`text-4xl font-bold mb-8 ${josefin.className}`}>
         Browse Books
       </h1>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <div className="flex-1">
-          <Input
-            type="text"
-            placeholder="Search by title or author..."
-            value={search}
-            onChange={handleSearchChange}
-            className="w-full"
-          />
+      <div className="flex flex-col gap-4 mb-8">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <Input
+              type="text"
+              placeholder="Search by title or author..."
+              value={search}
+              onChange={handleSearchChange}
+              className="w-full"
+            />
+          </div>
+          <div className="w-full md:w-64">
+            <Select value={selectedRating} onValueChange={handleRatingChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by Rating" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Ratings</SelectItem>
+                <SelectItem value="4-5">4-5 Stars</SelectItem>
+                <SelectItem value="3-4">3-4 Stars</SelectItem>
+                <SelectItem value="2-3">2-3 Stars</SelectItem>
+                <SelectItem value="1-2">1-2 Stars</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="w-full md:w-64">
-          <Select value={selectedGenre} onValueChange={handleGenreChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Genre" />
-            </SelectTrigger>
-            <SelectContent side="bottom" align="start">
-              <SelectItem value="all">All Genres</SelectItem>
+
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium">Filter by Genre</label>
+              {selectedGenres.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedGenres([])}
+                  className="h-auto py-1 px-2 text-xs"
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
               {genres.map((genre) => (
-                <SelectItem key={genre._id} value={genre.title}>
+                <Badge
+                  key={genre._id}
+                  variant={
+                    selectedGenres.includes(genre.title) ? "default" : "outline"
+                  }
+                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                  onClick={() => handleGenreToggle(genre.title)}
+                >
                   {genre.title}
-                </SelectItem>
+                  {selectedGenres.includes(genre.title) && (
+                    <IconX className="ml-1 h-3 w-3" />
+                  )}
+                </Badge>
               ))}
-            </SelectContent>
-          </Select>
+            </div>
+          </div>
+
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllFilters}
+              className="w-full sm:w-auto"
+            >
+              Clear All Filters
+            </Button>
+          )}
         </div>
       </div>
 
